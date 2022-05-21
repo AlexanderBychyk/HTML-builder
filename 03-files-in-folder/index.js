@@ -12,12 +12,10 @@ function showDir(dir) {
         if (stats.isFile()) {
           console.log([
             file.slice(0, file.lastIndexOf('.')),
-            file.slice(file.lastIndexOf('.')),
+            file.slice(file.lastIndexOf('.')+1),
             `${stats.size * 0.001}kb`
           ].join(' - '));
-        } else {
-          showDir(newDir);
-        }
+        } 
       });
     });
   });
