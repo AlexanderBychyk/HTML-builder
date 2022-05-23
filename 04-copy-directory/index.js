@@ -1,15 +1,32 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
 const dir = path.join(__dirname, 'files');
-const dirCopy = path.join(__dirname, 'copyDir/');
+const dirCopy = path.join(__dirname, 'files-copy');
 
-fs.rmdir(dirCopy, () => {});
-fs.mkdir(dirCopy, () => {});
-fs.readdir(dir, (err, data) => {
-  data.forEach(v => {
-    let fileDir = path.join(dir, v);
-    let fileCopyDir = path.join(dirCopy, v);
-    fs.copyFile(fileDir, fileCopyDir, () => {});
-  });
-});
+(async () => {
+  await fs.stat(dirCopy)
+    .then(async () => {
+      await fs.rm(dirCopy, {recursive: true});
+    })
+    .catch(() => {});
+  await fs.mkdir(dirCopy);
+  await copyDir(dir, dirCopy);
+})();
+
+function copyDir(dir, dirCopy) {
+  fs.readdir(dir)
+    .then(filenames => {
+      for (let filename of filenames) {
+        fs.stat(path.join(dir, filename))
+          .then((stats) => {
+            if (stats.isFile()) {
+              fs.copyFile(path.join(dir, filename), path.join(dirCopy, filename));
+            } else {
+              fs.mkdir(path.join(dirCopy, filename));
+              copyDir(path.join(dir, filename), path.join(dirCopy, filename));
+            }
+          });
+      }
+    });
+}
